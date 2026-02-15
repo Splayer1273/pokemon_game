@@ -1,13 +1,36 @@
-import React from 'react'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import  DodgeGame from "./pages/DodgeGame";
+
+import Auth from "./pages/Auth";
+import Home from "./pages/Home";
+import CatchPokemon from "./pages/catchpokemon";
+import ZombiePokemon from "./pages/zombipockemon";
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Home />} />
+        <Route path="/catch" element={<CatchPokemon />} />
+        <Route path="/zombie" element={<ZombiePokemon />} />
+         <Route path="/dodge" element={<DodgeGame />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/auth" element={<Auth />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 function App() {
   return (
-    <nav className='bg-black flex items-center justify-between px-4'>
-      <div className='bg-white size-12 flex items-center justify-center rounded-4xl '>logo</div>
-      <button className='bg-blue-600 text-white border-r-blue p-2 rounded-md' >Submit</button>
-
-    </nav>
-  )
+    <Router>
+      <AnimatedRoutes />
+    </Router>
+  );
 }
 
-export default App
+export default App;
