@@ -3,117 +3,109 @@ import { useNavigate } from "react-router-dom";
 
 function DodgeGame() {
   const navigate = useNavigate();
-  const GAME_WIDTH = 600;
-  const GAME_HEIGHT = 600;
-  const PLAYER_SIZE = 70;
 
-  const [playerX, setPlayerX] = useState(GAME_WIDTH / 2 - PLAYER_SIZE / 2);
+  const [playerX, setPlayerX] = useState(0);
   const [obstacles, setObstacles] = useState([]);
   const [score, setScore] = useState(0);
   const [speed, setSpeed] = useState(4);
   const [gameOver, setGameOver] = useState(false);
-  const [user, setUser] = useState(null);
-  const [lastSpeedUpScore, setLastSpeedUpScore] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
 
-  // Load user
+  // Detect Mobile & set container size
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem("pokemonCurrentUser"));
-    if (!currentUser) {
-      navigate("/auth");
-    } else {
-      setUser(currentUser);
-    }
-  }, [navigate]);
+    const checkResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      const width = Math.min(window.innerWidth - 20, 600);
+      setContainerWidth(width);
+      setContainerHeight(width); // square
+      setPlayerX(width / 2 - 50 / 2);
+    };
+    checkResize();
+    window.addEventListener("resize", checkResize);
+    return () => window.removeEventListener("resize", checkResize);
+  }, []);
 
-  // Player Movement
+  // Movement
+  const moveLeft = () => {
+    if (gameOver) return;
+    setPlayerX((x) => Math.max(0, x - 20));
+  };
+
+  const moveRight = () => {
+    if (gameOver) return;
+    setPlayerX((x) => Math.min(containerWidth - 50, x + 20));
+  };
+
+  // Keyboard Control
   useEffect(() => {
     const handleKey = (e) => {
       if (gameOver) return;
-      if (e.key === "ArrowLeft") setPlayerX((x) => Math.max(0, x - 20));
-      if (e.key === "ArrowRight") setPlayerX((x) => Math.min(GAME_WIDTH - PLAYER_SIZE, x + 20));
+      if (e.key === "ArrowLeft") moveLeft();
+      if (e.key === "ArrowRight") moveRight();
     };
-
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [gameOver]);
+  }, [gameOver, containerWidth]);
 
   // Game Loop
   useEffect(() => {
     if (gameOver) return;
 
     const interval = setInterval(() => {
-      // Move obstacles
       setObstacles((prev) =>
         prev
           .map((o) => ({ ...o, y: o.y + speed }))
-          .filter((o) => o.y < GAME_HEIGHT)
+          .filter((o) => o.y < containerHeight)
       );
 
-      // Add new obstacle
       if (Math.random() < 0.05) {
         setObstacles((prev) => [
           ...prev,
-          { x: Math.random() * (GAME_WIDTH - 40), y: 0 },
+          { x: Math.random() * (containerWidth - 40), y: 0 },
         ]);
       }
 
-      // Increase score
       setScore((prev) => prev + 1);
     }, 50);
 
     return () => clearInterval(interval);
-  }, [gameOver, speed]);
+  }, [gameOver, speed, containerWidth, containerHeight]);
 
-  // Difficulty scaling
-  useEffect(() => {
-    if (score - lastSpeedUpScore >= 200) {
-      setSpeed((s) => s + 1);
-      setLastSpeedUpScore(score);
-    }
-  }, [score, lastSpeedUpScore]);
-
-  // Collision detection
+  // Collision Detection
   useEffect(() => {
     obstacles.forEach((o) => {
       if (
-        o.y + 40 > GAME_HEIGHT - PLAYER_SIZE - 10 &&
-        o.x < playerX + PLAYER_SIZE &&
+        o.y + 40 > containerHeight - 50 &&
+        o.x < playerX + 50 &&
         o.x + 40 > playerX
       ) {
         setGameOver(true);
       }
     });
-  }, [obstacles, playerX]);
-
-  // Save score for user
-  useEffect(() => {
-    if (gameOver && user) {
-      const allScores = JSON.parse(localStorage.getItem("pokemonScores")) || {};
-      const userScores = allScores[user.email] || {};
-      userScores.dodge = Math.max(userScores.dodge || 0, score);
-      allScores[user.email] = { ...userScores, username: user.username };
-      localStorage.setItem("pokemonScores", JSON.stringify(allScores));
-    }
-  }, [gameOver, score, user]);
+  }, [obstacles, playerX, containerHeight]);
 
   const restart = () => {
-    setPlayerX(GAME_WIDTH / 2 - PLAYER_SIZE / 2);
+    setPlayerX(containerWidth / 2 - 50 / 2);
     setObstacles([]);
     setScore(0);
     setSpeed(4);
     setGameOver(false);
-    setLastSpeedUpScore(0);
   };
-
-  if (!user) return null;
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>⚡ Pokémon Dodge Arena 🔥</h1>
-      <h2>Player: {user.username}</h2>
       <h2>Score: {score}</h2>
 
-      <div style={styles.gameArea}>
+      <div
+        style={{
+          ...styles.gameArea,
+          width: containerWidth,
+          height: containerHeight,
+        }}
+      >
         {/* Player */}
         <img
           src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
@@ -121,28 +113,41 @@ function DodgeGame() {
           style={{
             ...styles.player,
             left: playerX,
-            transition: "left 0.1s",
+            bottom: 0,
           }}
         />
 
-        {/* Obstacles */}
+        {/* Obstacles as Pokéballs */}
         {obstacles.map((o, i) => (
-          <div
+          <img
             key={i}
+            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+            alt="pokeball"
             style={{
-              ...styles.obstacle,
+              ...styles.pokeball,
               left: o.x,
               top: o.y,
-              background: "radial-gradient(circle, red 0%, darkred 100%)",
             }}
           />
         ))}
       </div>
 
+      {/* Mobile Controls */}
+      {isMobile && !gameOver && (
+        <div style={styles.mobileControls}>
+          <button style={styles.controlButton} onTouchStart={moveLeft}>
+            ⬅
+          </button>
+          <button style={styles.controlButton} onTouchStart={moveRight}>
+            ➡
+          </button>
+        </div>
+      )}
+
       {gameOver && (
         <div style={styles.gameOver}>
           <h2 style={{ color: "red" }}>💀 GAME OVER</h2>
-          <p>🔥 Your Score: {score}</p>
+          <p>Your Score: {score}</p>
           <button onClick={restart} style={styles.button}>
             Restart
           </button>
@@ -169,9 +174,6 @@ const styles = {
   },
   gameArea: {
     position: "relative",
-    width: "100%",
-    maxWidth: "600px",
-    height: "600px",
     margin: "20px auto",
     borderRadius: "20px",
     border: "3px solid #00ff99",
@@ -181,18 +183,32 @@ const styles = {
   },
   player: {
     position: "absolute",
-    bottom: "10px",
-    width: "70px",
-    filter: "drop-shadow(0 0 10px #ffea00)",
+    width: 50,
+    transition: "left 0.08s linear",
   },
-  obstacle: {
+  pokeball: {
     position: "absolute",
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
-    boxShadow: "0 0 8px red",
+    width: 40,
+    height: 40,
+    transform: "translate(0,0)",
   },
-  gameOver: { marginTop: "20px" },
+  mobileControls: {
+    marginTop: "20px",
+    display: "flex",
+    justifyContent: "center",
+    gap: "60px",
+  },
+  controlButton: {
+    fontSize: "40px",
+    padding: "20px 40px",
+    borderRadius: "20px",
+    border: "none",
+    background: "linear-gradient(90deg,#00ff99,#00b386)",
+    fontWeight: "bold",
+  },
+  gameOver: {
+    marginTop: "20px",
+  },
   button: {
     padding: "10px 20px",
     margin: "5px",
@@ -203,7 +219,6 @@ const styles = {
     background: "linear-gradient(90deg,#00ff99,#00b386)",
     fontWeight: "bold",
     color: "#000",
-    boxShadow: "0 0 10px #00ff99",
   },
 };
 
