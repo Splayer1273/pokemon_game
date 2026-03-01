@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 function ZombieGame() {
   const navigate = useNavigate();
 
-  const PLAYER_SIZE = 7; // in vw
-  const ZOMBIE_SIZE = 5; // in vw
-  const BULLET_WIDTH = 1; // in vw
-  const BULLET_HEIGHT = 3; // in vh
+  const PLAYER_SIZE = 70;
+  const BASE_WIDTH = 800;
+  const BASE_HEIGHT = 600;
 
-  const [player, setPlayer] = useState({ x: 50, y: 50 }); // % based
-  const [zombies, setZombies] = useState([{ x: 10, y: 10, hp: 1, speed: 1 }]);
+  const [player, setPlayer] = useState({ x: 400, y: 300 });
+  const [zombies, setZombies] = useState([{ x: 100, y: 100, hp: 1, speed: 2 }]);
   const [bullets, setBullets] = useState([]);
   const [score, setScore] = useState(0);
   const [hp, setHp] = useState(100);
@@ -18,12 +17,14 @@ function ZombieGame() {
   const [user, setUser] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const moveSpeed = 3; // in %
-  const bulletSpeed = 2; // in %
+  const moveSpeed = 15;
+  const bulletSpeed = 10;
 
   // Detect Mobile
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -36,9 +37,10 @@ function ZombieGame() {
     else setUser(currentUser);
   }, [navigate]);
 
+  // Restart Game
   const restart = () => {
-    setPlayer({ x: 50, y: 50 });
-    setZombies([{ x: 10, y: 10, hp: 1, speed: 1 }]);
+    setPlayer({ x: 400, y: 300 });
+    setZombies([{ x: 100, y: 100, hp: 1, speed: 2 }]);
     setBullets([]);
     setScore(0);
     setHp(100);
@@ -47,10 +49,10 @@ function ZombieGame() {
 
   // Movement
   const moveUp = () => { if (!gameOver) setPlayer(p => ({ ...p, y: Math.max(0, p.y - moveSpeed) })); };
-  const moveDown = () => { if (!gameOver) setPlayer(p => ({ ...p, y: Math.min(100, p.y + moveSpeed) })); };
+  const moveDown = () => { if (!gameOver) setPlayer(p => ({ ...p, y: Math.min(BASE_HEIGHT - PLAYER_SIZE, p.y + moveSpeed) })); };
   const moveLeft = () => { if (!gameOver) setPlayer(p => ({ ...p, x: Math.max(0, p.x - moveSpeed) })); };
-  const moveRight = () => { if (!gameOver) setPlayer(p => ({ ...p, x: Math.min(100, p.x + moveSpeed) })); };
-  const shoot = () => { if (!gameOver) setBullets(prev => [...prev, { x: player.x, y: player.y }]); };
+  const moveRight = () => { if (!gameOver) setPlayer(p => ({ ...p, x: Math.min(BASE_WIDTH - PLAYER_SIZE, p.x + moveSpeed) })); };
+  const shoot = () => { if (!gameOver) setBullets(prev => [...prev, { x: player.x + PLAYER_SIZE / 2, y: player.y }]); };
 
   // Keyboard
   useEffect(() => {
@@ -77,13 +79,14 @@ function ZombieGame() {
     if (gameOver) return;
 
     const interval = setInterval(() => {
-      // Move zombies toward player
       setZombies(prevZombies =>
         prevZombies.map(z => {
           const dx = player.x - z.x;
           const dy = player.y - z.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-          if (distance < 5) setHp(prev => Math.max(prev - 10, 0));
+
+          if (distance < 40) setHp(prev => Math.max(prev - 10, 0));
+
           return {
             ...z,
             x: z.x + (dx / distance) * z.speed,
@@ -92,25 +95,25 @@ function ZombieGame() {
         })
       );
 
-      // Move bullets
       setBullets(prev => prev.map(b => ({ ...b, y: b.y - bulletSpeed })).filter(b => b.y > 0));
 
-      // Handle collisions
       setZombies(prevZombies => {
         let newZombies = [];
         let bonusScore = 0;
+
         prevZombies.forEach(z => {
-          const hit = bullets.some(b => Math.abs(b.x - z.x) < 5 && Math.abs(b.y - z.y) < 5);
+          const hit = bullets.some(b => Math.abs(b.x - z.x) < 25 && Math.abs(b.y - z.y) < 25);
           if (hit) bonusScore += 5;
           else newZombies.push(z);
         });
+
         if (bonusScore > 0) setScore(prev => prev + bonusScore);
+
         return newZombies;
       });
 
-      // Spawn new zombies
       if (Math.random() < 0.03) {
-        setZombies(prev => [...prev, { x: Math.random() * 90, y: Math.random() * 90, hp: 1, speed: 1 }]);
+        setZombies(prev => [...prev, { x: Math.random() * (BASE_WIDTH - 40), y: Math.random() * (BASE_HEIGHT - 40), hp: 1, speed: 2 }]);
       }
     }, 100);
 
@@ -123,7 +126,7 @@ function ZombieGame() {
 
   return (
     <div style={styles.container}>
-      <h1 style={{ fontSize: '4vw' }}>🧟 Pokémon Zombie Apocalypse ⚡</h1>
+      <h1>🧟 Pokémon Zombie Apocalypse ⚡</h1>
 
       <div style={styles.stats}>
         <span>HP: {hp}</span>
@@ -135,12 +138,7 @@ function ZombieGame() {
           <img
             src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
             alt="player"
-            style={{
-              ...styles.player,
-              width: `${PLAYER_SIZE}vw`,
-              left: `${player.x}%`,
-              top: `${player.y}%`,
-            }}
+            style={{ ...styles.player, left: `${(player.x / BASE_WIDTH) * 100}%`, top: `${(player.y / BASE_HEIGHT) * 100}%` }}
           />
 
           {zombies.map((z, i) => (
@@ -148,25 +146,14 @@ function ZombieGame() {
               key={i}
               src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
               alt="zombie"
-              style={{
-                ...styles.zombie,
-                width: `${ZOMBIE_SIZE}vw`,
-                left: `${z.x}%`,
-                top: `${z.y}%`,
-              }}
+              style={{ ...styles.zombie, left: `${(z.x / BASE_WIDTH) * 100}%`, top: `${(z.y / BASE_HEIGHT) * 100}%` }}
             />
           ))}
 
           {bullets.map((b, i) => (
             <div
               key={i}
-              style={{
-                ...styles.bullet,
-                width: `${BULLET_WIDTH}vw`,
-                height: `${BULLET_HEIGHT}vh`,
-                left: `${b.x}%`,
-                top: `${b.y}%`,
-              }}
+              style={{ ...styles.bullet, left: `${(b.x / BASE_WIDTH) * 100}%`, top: `${(b.y / BASE_HEIGHT) * 100}%` }}
             />
           ))}
         </div>
@@ -188,14 +175,12 @@ function ZombieGame() {
         </div>
       )}
 
-      {/* Responsive Game Over Overlay */}
+      {/* Game Over Screen */}
       {gameOver && (
-        <div style={styles.gameOverOverlay}>
-          <div style={styles.gameOverBox}>
-            <h2 style={{ fontSize: '5vw', marginBottom: 20 }}>Game Over 😭</h2>
-            <button style={styles.btn} onClick={restart}>Play Again</button>
-            <button style={{ ...styles.btn, marginLeft: 10 }} onClick={() => navigate("/")}>🏠 Back Home</button>
-          </div>
+        <div style={{ marginTop: 20 }}>
+          <h2>Game Over 😭</h2>
+          <button style={styles.btn} onClick={restart}>Play Again</button>
+          <button style={{ ...styles.btn, marginLeft: 10 }} onClick={() => navigate("/")}>🏠 Back Home</button>
         </div>
       )}
     </div>
@@ -207,7 +192,7 @@ const styles = {
     textAlign: "center",
     color: "#fff",
     minHeight: "100vh",
-    padding: "1rem",
+    padding: "10px",
     fontFamily: "Arial",
     background: "radial-gradient(circle, #0a0a0a 40%, #111 100%)",
   },
@@ -215,18 +200,18 @@ const styles = {
     display: "flex",
     justifyContent: "space-around",
     marginBottom: "10px",
-    fontSize: "4vw",
+    fontSize: "18px",
     fontWeight: "bold",
   },
   gameWrapper: {
-    width: "95vw",
+    width: "100%",
     maxWidth: "900px",
     margin: "auto",
   },
   gameArea: {
     position: "relative",
     width: "100%",
-    paddingTop: "75%", // 4:3 aspect ratio
+    aspectRatio: "4 / 3",
     borderRadius: "20px",
     border: "3px solid #00ff99",
     boxShadow: "0 0 30px #00ff99",
@@ -235,49 +220,37 @@ const styles = {
   },
   player: {
     position: "absolute",
+    width: "8%",
     transform: "translate(-50%, -50%)",
   },
   zombie: {
     position: "absolute",
+    width: "5%",
     transform: "translate(-50%, -50%)",
   },
   bullet: {
     position: "absolute",
+    width: "0.8%",
+    height: "3%",
     background: "yellow",
     transform: "translate(-50%, -50%)",
   },
   mobileControls: {
-    marginTop: "2vh",
+    marginTop: "20px",
   },
   row: {
     display: "flex",
     justifyContent: "center",
-    gap: "3vw",
-    margin: "1vh 0",
+    gap: "15px",
+    margin: "8px",
   },
   btn: {
-    fontSize: "5vw",
-    padding: "1vw 2vw",
+    fontSize: "22px",
+    padding: "12px 20px",
     borderRadius: "12px",
     border: "none",
     background: "linear-gradient(90deg,#00ff99,#00b386)",
     fontWeight: "bold",
-  },
-  gameOverOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    background: "rgba(0,0,0,0.85)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  gameOverBox: {
-    textAlign: "center",
-    color: "#fff",
   },
 };
 
