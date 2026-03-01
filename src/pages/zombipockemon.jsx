@@ -134,47 +134,50 @@ function ZombieGame() {
         <span>Score: {score}</span>
       </div>
 
-      <div style={styles.gameWrapper}>
-        <div style={styles.gameArea}>
-          {/* Player */}
-          <img
-            src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-            alt="player"
-            style={{ ...styles.player, width: `${PLAYER_SIZE}vw`, left: `${player.x}%`, top: `${player.y}%` }}
-          />
+      <div style={{ ...styles.gameWrapper, width: "98vw", maxWidth: "1200px" }}>
+  <div style={{ ...styles.gameArea, paddingTop: "80%" }}>
+    {/* Player */}
+    <img
+      src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+      alt="player"
+      style={{ ...styles.player, width: `${PLAYER_SIZE}vw`, left: `${player.x}%`, top: `${player.y}%` }}
+    />
 
-          {/* Zombies */}
-          {zombies.map((z, i) => (
-            <img
-              key={i}
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
-              alt="zombie"
-              style={{ ...styles.zombie, width: `${ZOMBIE_SIZE}vw`, left: `${z.x}%`, top: `${z.y}%` }}
-            />
-          ))}
+    {/* Zombies */}
+    {zombies.map((z, i) => (
+      <img
+        key={i}
+        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+        alt="zombie"
+        style={{ ...styles.zombie, width: `${ZOMBIE_SIZE}vw`, left: `${z.x}%`, top: `${z.y}%` }}
+      />
+    ))}
 
-          {/* Bullets */}
-          {bullets.map((b, i) => (
-            <div
-              key={i}
-              style={{ ...styles.bullet, width: `${BULLET_WIDTH}vw`, height: `${BULLET_HEIGHT}vh`, left: `${b.x}%`, top: `${b.y}%` }}
-            />
-          ))}
-        </div>
-      </div>
-
+    {/* Bullets */}
+    {bullets.map((b, i) => (
+      <div
+        key={i}
+        style={{ ...styles.bullet, width: `${BULLET_WIDTH}vw`, height: `${BULLET_HEIGHT}vh`, left: `${b.x}%`, top: `${b.y}%` }}
+      />
+    ))}
+  </div>
+</div>
       {/* Mobile Controls */}
       {isMobile && !gameOver && (
-        <div style={styles.mobileControls}>
-          <div style={styles.row}><button style={styles.btn} onTouchStart={moveUp}>⬆</button></div>
-          <div style={styles.row}>
-            <button style={styles.btn} onTouchStart={moveLeft}>⬅</button>
-            <button style={styles.btn} onTouchStart={shoot}>🔥</button>
-            <button style={styles.btn} onTouchStart={moveRight}>➡</button>
-          </div>
-          <div style={styles.row}><button style={styles.btn} onTouchStart={moveDown}>⬇</button></div>
-        </div>
-      )}
+  <div style={styles.mobileControls}>
+    <div style={styles.row}>
+      <button style={styles.mobileBtn} onTouchStart={moveUp}>⬆</button>
+    </div>
+    <div style={styles.row}>
+      <button style={styles.mobileBtn} onTouchStart={moveLeft}>⬅</button>
+      <button style={styles.mobileBtn} onTouchStart={shoot}>🔥</button>
+      <button style={styles.mobileBtn} onTouchStart={moveRight}>➡</button>
+    </div>
+    <div style={styles.row}>
+      <button style={styles.mobileBtn} onTouchStart={moveDown}>⬇</button>
+    </div>
+  </div>
+)}
 
       {/* Game Over Overlay */}
       {gameOver && (
@@ -235,14 +238,22 @@ const styles = {
     transform: "translate(-50%, -50%)",
   },
   mobileControls: {
-    marginTop: "2vh",
-  },
-  row: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "3vw",
-    margin: "1vh 0",
-  },
+  marginTop: "3vh",
+},
+row: {
+  display: "flex",
+  justifyContent: "center",
+  gap: "5vw", // increased spacing between buttons
+  margin: "1vh 0",
+},
+mobileBtn: {
+  fontSize: "8vw",      // bigger font for touch
+  padding: "2vw 4vw",   // bigger padding
+  borderRadius: "15px",
+  border: "none",
+  background: "linear-gradient(90deg,#00ff99,#00b386)",
+  fontWeight: "bold",
+},
   btn: {
     fontSize: "5vw",
     padding: "1vw 2vw",
