@@ -18,7 +18,7 @@ function ZombieGame() {
   const [isMobile, setIsMobile] = useState(false);
 
   const moveSpeed = 15;
-  const bulletSpeed = 12;
+  const bulletSpeed = 10;
 
   // Detect Mobile
   useEffect(() => {
@@ -42,46 +42,24 @@ function ZombieGame() {
     if (gameOver) return;
     setPlayer((p) => ({ ...p, y: Math.max(0, p.y - moveSpeed) }));
   };
-
   const moveDown = () => {
     if (gameOver) return;
-    setPlayer((p) => ({
-      ...p,
-      y: Math.min(BASE_HEIGHT - PLAYER_SIZE, p.y + moveSpeed),
-    }));
+    setPlayer((p) => ({ ...p, y: Math.min(BASE_HEIGHT - PLAYER_SIZE, p.y + moveSpeed) }));
   };
-
   const moveLeft = () => {
     if (gameOver) return;
     setPlayer((p) => ({ ...p, x: Math.max(0, p.x - moveSpeed) }));
   };
-
   const moveRight = () => {
     if (gameOver) return;
-    setPlayer((p) => ({
-      ...p,
-      x: Math.min(BASE_WIDTH - PLAYER_SIZE, p.x + moveSpeed),
-    }));
+    setPlayer((p) => ({ ...p, x: Math.min(BASE_WIDTH - PLAYER_SIZE, p.x + moveSpeed) }));
   };
-
   const shoot = () => {
     if (gameOver) return;
-    setBullets((prev) => [
-      ...prev,
-      { x: player.x + PLAYER_SIZE / 2, y: player.y },
-    ]);
+    setBullets((prev) => [...prev, { x: player.x + PLAYER_SIZE / 2, y: player.y }]);
   };
 
-  const restartGame = () => {
-    setPlayer({ x: 400, y: 300 });
-    setZombies([{ x: 100, y: 100, hp: 1, speed: 2 }]);
-    setBullets([]);
-    setScore(0);
-    setHp(100);
-    setGameOver(false);
-  };
-
-  // Keyboard Controls
+  // Keyboard
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "ArrowUp") moveUp();
@@ -94,7 +72,7 @@ function ZombieGame() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [player, gameOver]);
 
-  // Auto Score
+  // Auto score
   useEffect(() => {
     if (gameOver) return;
     const timer = setInterval(() => {
@@ -137,11 +115,13 @@ function ZombieGame() {
             (b) => Math.abs(b.x - z.x) < 25 && Math.abs(b.y - z.y) < 25
           );
 
-          if (hit) bonusScore += 5;
-          else newZombies.push(z);
+          if (hit) {
+            bonusScore += 5;
+          } else newZombies.push(z);
         });
 
         if (bonusScore > 0) setScore((prev) => prev + bonusScore);
+
         return newZombies;
       });
 
@@ -214,33 +194,18 @@ function ZombieGame() {
         </div>
       </div>
 
-      {gameOver && (
-        <div style={styles.gameOverBox}>
-          <h2>💀 Game Over</h2>
-          <p>Your Score: {score}</p>
-          <div style={styles.gameOverButtons}>
-            <button style={styles.actionBtn} onClick={restartGame}>
-              🔄 Restart
-            </button>
-            <button style={styles.actionBtn} onClick={() => navigate("/")}>
-              🏠 Back To Home
-            </button>
-          </div>
-        </div>
-      )}
-
       {isMobile && !gameOver && (
         <div style={styles.mobileControls}>
           <div style={styles.row}>
-            <button style={styles.circleBtn} onTouchStart={moveUp}>⬆</button>
+            <button style={styles.btn} onTouchStart={moveUp}>⬆</button>
           </div>
           <div style={styles.row}>
-            <button style={styles.circleBtn} onTouchStart={moveLeft}>⬅</button>
-            <button style={styles.circleBtn} onTouchStart={shoot}>🔥</button>
-            <button style={styles.circleBtn} onTouchStart={moveRight}>➡</button>
+            <button style={styles.btn} onTouchStart={moveLeft}>⬅</button>
+            <button style={styles.btn} onTouchStart={shoot}>🔥</button>
+            <button style={styles.btn} onTouchStart={moveRight}>➡</button>
           </div>
           <div style={styles.row}>
-            <button style={styles.circleBtn} onTouchStart={moveDown}>⬇</button>
+            <button style={styles.btn} onTouchStart={moveDown}>⬇</button>
           </div>
         </div>
       )}
@@ -254,33 +219,41 @@ const styles = {
     color: "#fff",
     minHeight: "100vh",
     padding: "10px",
+    fontFamily: "Arial",
     background: "radial-gradient(circle, #0a0a0a 40%, #111 100%)",
   },
   stats: {
     display: "flex",
     justifyContent: "space-around",
     marginBottom: "10px",
+    fontSize: "18px",
     fontWeight: "bold",
   },
-  gameWrapper: { 
-    width: "95%",          // take most of screen width
-    maxWidth: "1200px",    // max width on desktop
-    margin: "auto" 
-},
-gameArea: { 
-    position: "relative", 
-    width: "100%",          // always fit container
-    aspectRatio: "4 / 3",   // maintain ratio
-    borderRadius: "20px", 
-    border: "3px solid #00ff99", 
-    boxShadow: "0 0 30px #00ff99", 
-    overflow: "hidden", 
+  gameWrapper: {
+    width: "100%",
+    maxWidth: "900px",
+    margin: "auto",
+  },
+  gameArea: {
+    position: "relative",
+    width: "100%",
+    aspectRatio: "4 / 3",
+    borderRadius: "20px",
+    border: "3px solid #00ff99",
+    boxShadow: "0 0 30px #00ff99",
+    overflow: "hidden",
     background: "#111",
-    minHeight: "500px",     // minimum height so mobile isn't too small
-    maxHeight: "800px",     // maximum height for large screens
-},
-  player: { position: "absolute", width: "8%", transform: "translate(-50%, -50%)" },
-  zombie: { position: "absolute", width: "5%", transform: "translate(-50%, -50%)" },
+  },
+  player: {
+    position: "absolute",
+    width: "8%",
+    transform: "translate(-50%, -50%)",
+  },
+  zombie: {
+    position: "absolute",
+    width: "5%",
+    transform: "translate(-50%, -50%)",
+  },
   bullet: {
     position: "absolute",
     width: "0.8%",
@@ -288,42 +261,21 @@ gameArea: {
     background: "yellow",
     transform: "translate(-50%, -50%)",
   },
-  gameOverBox: {
+  mobileControls: {
     marginTop: "20px",
-    padding: "20px",
-    background: "rgba(0,0,0,0.8)",
-    borderRadius: "15px",
   },
-  gameOverButtons: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "15px",
-    marginTop: "15px",
-    flexWrap: "wrap",
-  },
-  actionBtn: {
-    padding: "12px 20px",
-    fontWeight: "bold",
-    borderRadius: "12px",
-    border: "none",
-    background: "linear-gradient(90deg,#ff4d4d,#cc0000)",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  mobileControls: { marginTop: "20px" },
   row: {
     display: "flex",
     justifyContent: "center",
     gap: "15px",
     margin: "8px",
   },
-  circleBtn: {
-    width: "65px",
-    height: "65px",
-    borderRadius: "50%",
-    border: "none",
+  btn: {
     fontSize: "22px",
-    background: "linear-gradient(145deg,#00ff99,#00b386)",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    border: "none",
+    background: "linear-gradient(90deg,#00ff99,#00b386)",
     fontWeight: "bold",
   },
 };
