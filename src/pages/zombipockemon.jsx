@@ -198,70 +198,85 @@ const styles = {
     textAlign: "center",
     color: "#fff",
     minHeight: "100vh",
-    padding: "1rem",
+    padding: "clamp(10px,2vw,30px)",
     fontFamily: "Arial",
     background: "radial-gradient(circle, #0a0a0a 40%, #111 100%)",
   },
+
   stats: {
     display: "flex",
     justifyContent: "space-around",
     marginBottom: "1vh",
-    fontSize: "4vw",
+    fontSize: "clamp(16px,2vw,28px)",
     fontWeight: "bold",
   },
+
   gameWrapper: {
     width: "95vw",
-    maxWidth: "900px",
+    maxWidth: "1000px",
     margin: "auto",
   },
+
   gameArea: {
     position: "relative",
     width: "100%",
-    paddingTop: "75%", // 4:3 ratio
+    aspectRatio: "4 / 3", // PERFECT responsive ratio
     borderRadius: "20px",
     border: "3px solid #00ff99",
     boxShadow: "0 0 30px #00ff99",
     overflow: "hidden",
     background: "#111",
   },
+
   player: {
     position: "absolute",
     transform: "translate(-50%, -50%)",
+    width: "clamp(35px,7vw,80px)", // responsive size
   },
+
   zombie: {
     position: "absolute",
     transform: "translate(-50%, -50%)",
+    width: "clamp(25px,5vw,60px)",
   },
+
   bullet: {
     position: "absolute",
     background: "yellow",
     transform: "translate(-50%, -50%)",
+    width: "clamp(4px,1vw,10px)",
+    height: "clamp(10px,3vh,20px)",
   },
+
   mobileControls: {
-  marginTop: "3vh",
-},
-row: {
-  display: "flex",
-  justifyContent: "center",
-  gap: "5vw", // increased spacing between buttons
-  margin: "1vh 0",
-},
-mobileBtn: {
-  fontSize: "8vw",      // bigger font for touch
-  padding: "2vw 4vw",   // bigger padding
-  borderRadius: "15px",
-  border: "none",
-  background: "linear-gradient(90deg,#00ff99,#00b386)",
-  fontWeight: "bold",
-},
+    marginTop: "3vh",
+  },
+
+  row: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "clamp(10px,5vw,40px)",
+    margin: "1vh 0",
+  },
+
+  mobileBtn: {
+    fontSize: "clamp(18px,6vw,40px)",
+    padding: "clamp(8px,2vw,18px) clamp(12px,4vw,25px)",
+    borderRadius: "15px",
+    border: "none",
+    background: "linear-gradient(90deg,#00ff99,#00b386)",
+    fontWeight: "bold",
+  },
+
   btn: {
-    fontSize: "5vw",
-    padding: "1vw 2vw",
+    fontSize: "clamp(16px,2vw,28px)",
+    padding: "clamp(10px,1vw,18px) clamp(20px,2vw,30px)",
     borderRadius: "12px",
     border: "none",
     background: "linear-gradient(90deg,#00ff99,#00b386)",
     fontWeight: "bold",
   },
+
   gameOverOverlay: {
     position: "fixed",
     top: 0,
@@ -274,10 +289,11 @@ mobileBtn: {
     alignItems: "center",
     zIndex: 1000,
   },
+
   gameOverBox: {
     textAlign: "center",
     color: "#fff",
+    padding: "clamp(20px,3vw,40px)",
   },
 };
-
 export default ZombieGame;
